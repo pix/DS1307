@@ -22,9 +22,9 @@ This software is free software.
 #include <Wire.h>
 #include <DS1307.h>
 
+int i = 0;
 char dateTime[22];
-int RTCValues[7], i = 0, year, month, dayOfMonth, dayOfWeek, hour, minute,
-    second;
+DS1307Class::DateTime RTCValues;
 
 void setup() {
     Serial.begin(9600);
@@ -42,27 +42,27 @@ void setup() {
     }
     dateTime[i] = '\0';
 
-    year = 10 * (dateTime[2] - 48) + (dateTime[3] - 48);
-    month = 10 * (dateTime[5] - 48) + (dateTime[6] - 48);
-    dayOfMonth = 10 * (dateTime[8] - 48) + (dateTime[9] - 48);
-    dayOfWeek = (dateTime[20] - 48);
-    hour = 10 * (dateTime[11] - 48) + (dateTime[12] - 48);
-    minute = 10 * (dateTime[14] - 48) + (dateTime[15] - 48);
-    second = 10 * (dateTime[17] - 48) + (dateTime[18] - 48);
+    RTCValues.year = atoi(dateTime + 2);
+    RTCValues.month = atoi(dateTime + 5);
+    RTCValues.dayOfMonth = atoi(dateTime + 8);
+    RTCValues.dayOfWeek = atoi(dateTime + 20);
+    RTCValues.hour = atoi(dateTime + 11);
+    RTCValues.minute = atoi(dateTime + 14);
+    RTCValues.second = atoi(dateTime + 17);
 
-    DS1307.setDate(year, month, dayOfMonth, dayOfWeek, hour, minute, second);
+    DS1307.setDate(&RTCValues);
     Serial.println("Date and time set!");
     Serial.println("Reading data from RTC...");
 }
 
 void loop() {
-    DS1307.getDate(RTCValues);
-    sprintf(dateTime, "20%02d-%02d-%02d %02d:%02d:%02d", RTCValues[0],
-            RTCValues[1], RTCValues[2], RTCValues[4], RTCValues[5],
-            RTCValues[6]);
+    DS1307.getDate(&RTCValues);
+    sprintf(dateTime, "20%02d-%02d-%02d %02d:%02d:%02d", RTCValues.year,
+            RTCValues.month, RTCValues.dayOfMonth, RTCValues.hour, RTCValues.minute,
+            RTCValues.second);
     Serial.print(dateTime);
     Serial.print(" - day of week: ");
-    Serial.println(fromNumberToWeekDay(RTCValues[3]));
+    Serial.println(fromNumberToWeekDay(RTCValues.dayOfWeek));
 
     delay(1000);
 }

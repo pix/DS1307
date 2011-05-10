@@ -28,7 +28,7 @@ extern "C" {
 #include "Wire.h"
 
 
-char *fromNumberToWeekDay(int dayOfWeek) {
+char* fromNumberToWeekDay(uint8_t dayOfWeek) {
     if (dayOfWeek == 0)
         return "Sunday";
     else if (dayOfWeek == 1)
@@ -48,11 +48,11 @@ char *fromNumberToWeekDay(int dayOfWeek) {
 
 }
 
-uint8_t fromDecimalToBCD(uint8_t decimalValue) {
+static uint8_t fromDecimalToBCD(uint8_t decimalValue) {
     return ((decimalValue / 10) * 16) + (decimalValue % 10);
 }
 
-uint8_t fromBCDToDecimal(uint8_t BCDValue) {
+static uint8_t fromBCDToDecimal(uint8_t BCDValue) {
     return ((BCDValue / 16) * 10) + (BCDValue % 16);
 }
 
@@ -60,35 +60,30 @@ void DS1307Class::begin() {
     Wire.begin();
 }
 
-void DS1307Class::setDate(uint8_t year, uint8_t month, uint8_t dayOfMonth,
-                          uint8_t dayOfWeek, uint8_t hour, uint8_t minute,
-                          uint8_t second) {
+
+void DS1307Class::setDate(DS1307Class::DateTime* dateTime) {
     Wire.beginTransmission(DS1307_ADDRESS);
     Wire.send(0); //stop oscillator
 
-    //Start sending the new values
-    Wire.send(fromDecimalToBCD(second));
-    Wire.send(fromDecimalToBCD(minute));
-    Wire.send(fromDecimalToBCD(hour));
-    Wire.send(fromDecimalToBCD(dayOfWeek));
-    Wire.send(fromDecimalToBCD(dayOfMonth));
-    Wire.send(fromDecimalToBCD(month));
-    Wire.send(fromDecimalToBCD(year));
+    uint8_t* values = reinterpret_cast<uint8_t*>(dateTime);
+    for (int i = 6; i >= 0; i--) {
+      Wire.send(fromDecimalToBCD(values[i]));
+    }
 
     Wire.send(0); //start oscillator
     Wire.endTransmission();
 }
 
-void DS1307Class::getDate(int *values) {
+void DS1307Class::getDate(DS1307Class::DateTime* dateTime) {
     Wire.beginTransmission(DS1307_ADDRESS);
     Wire.send(0); //stop oscillator
     Wire.endTransmission();
     Wire.requestFrom(DS1307_ADDRESS, 7);
 
+    uint8_t* values = reinterpret_cast<uint8_t*>(dateTime);
     for (int i = 6; i >= 0; i--) {
         values[i] = fromBCDToDecimal(Wire.receive());
     }
-    //TODO: 24-hour time?
 }
 
 DS1307Class DS1307;

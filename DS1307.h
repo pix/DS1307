@@ -26,14 +26,35 @@
 
 class DS1307Class {
     public:
+
+        enum DayOfWeek
+        {
+            WD_SUNDAY=0,
+            WD_MONDAY,
+            WD_TUESDAY,
+            WD_WEDNESDAY,
+            WD_THURSDAY,
+            WD_FRIDAY,
+            WD_SATURDAY
+        };
+
+        struct DateTime {
+            uint8_t year;
+            uint8_t month;
+            uint8_t dayOfMonth;
+            uint8_t dayOfWeek;
+            uint8_t hour;
+            uint8_t minute;
+            uint8_t second;
+        };
+
         void begin();
-        void getDate(int *values);
-        void setDate(uint8_t year, uint8_t month, uint8_t dayOfMonth,
-                     uint8_t dayOfWeek, uint8_t hour, uint8_t minue,
-                     uint8_t second);
+        void getDate(DateTime* dateTime);
+        void setDate(DateTime* dateTime);
+
 };
 
-char *fromNumberToWeekDay(int dayOfWeek);
+char* fromNumberToWeekDay(uint8_t dayOfWeek);
 
 extern DS1307Class DS1307;
 
